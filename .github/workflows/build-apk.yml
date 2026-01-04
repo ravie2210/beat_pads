@@ -1,1 +1,38 @@
+name: Build Flutter APK
 
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        architecture: x64
+
+    - name: Get dependencies
+      run: flutter pub get
+
+    - name: Build APK
+      run: flutter build apk --release --split-per-abi  # Smaller APKs for different device types
+
+    - name: Upload APK artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: built-apks
+        path: build/app/outputs/flutter-apk/*.apk
